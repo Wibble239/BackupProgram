@@ -9,8 +9,6 @@ from datetime import datetime
 import ctypes
 import re
 
-import attrs
-
 class BackupGUI:
     def __init__(self, root, location, folders):
         self.root = root            #
