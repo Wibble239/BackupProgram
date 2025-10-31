@@ -124,7 +124,7 @@ class BackupGUI:
         self.root.after(0, lambda: self.draw_progress(100, "Backup Complete"))
 
     def check_storage_space(self):  # Calculates the size of the backup (ignoring hidden files) and compares it to the space available at the backup location
-        self.root.after(0, lambda: self.draw_progress(0, "Checking Storage Space..."))
+        self.root.after(0, lambda: self.draw_progress(0, "Calculating Backup Size..."))
         total_size = 0
         self.file_count = 0
         for folder in self.folders:
@@ -135,6 +135,7 @@ class BackupGUI:
                     if self.is_hidden(fp):
                         continue
                     total_size += os.path.getsize(fp)
+                    self.root.after(0, lambda: self.draw_progress(0, f"Calculating Backup Size... {total_size / (1024*1024*1024):.2f} GB"))
                     self.file_count += 1
 
         if shutil.disk_usage(self.location).free > total_size:
