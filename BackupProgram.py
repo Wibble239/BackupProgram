@@ -15,6 +15,8 @@ class BackupGUI:
         self.location = location    # Loading data and window into the class
         self.folders = folders      #
 
+        self.failed = []            # List to track failed transfers
+
         self.window = ttk.Frame(root, padding="10", style="TFrame")                                                                                             #
         self.window.grid(row=0, column=0, sticky=(tk.W, tk.E))                                                                                                  #
         self.buttons_frame = ttk.Frame(self.window, padding="10", style="TFrame")                                                                               #
@@ -121,6 +123,11 @@ class BackupGUI:
             self.current_folder = folder
             dest = os.path.join(backup_folder, os.path.basename(folder))
             self.custom_copytree(folder, dest)
+        if self.failed:
+            with open(os.path.join(backup_folder, "failed_transfers.txt"), 'w') as f:
+                for item in self.failed:
+                    f.write(f"{item}\n")
+            self.root.after(0, lambda: self.sub_window(f"{len(self.failed)} files failed to transfer. See failed_transfers.txt in the backup folder for details."))
         self.root.after(0, lambda: self.draw_progress(100, "Backup Complete"))
 
     def check_storage_space(self):  # Calculates the size of the backup (ignoring hidden files) and compares it to the space available at the backup location
@@ -166,7 +173,10 @@ class BackupGUI:
                 progress_name_start = (short_name[0] + "/.../" + os.path.basename(self.current_folder))[:45] + "/.../"
                 progress_name = progress_name_start + short_name[-1][-(85-len(progress_name_start)):]
                 self.root.after(0, lambda n=name: self.draw_progress((self.file_copied / self.file_count) * 100, f"Copying {progress_name}"))
-                shutil.copy2(srcname, dstname)  # Preserves metadata
+                try:
+                    shutil.copy2(srcname, dstname)
+                except:
+                    self.failed.append(srcname)
                 self.file_copied += 1
 
     def is_hidden(self, filepath):  # Checks if a file or directory is hidden (Windows only)
