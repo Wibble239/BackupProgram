@@ -69,7 +69,16 @@ class BackupGUI:
         sub_frame = ttk.Frame(sub_win, padding="10", style="TFrame")
         sub_frame.grid(row=0, column=0)
         ttk.Label(sub_frame, text=message, style="TLabel").grid(row=0, column=0, padx=20, pady=20)
-        ttk.Button(sub_frame, text="OK", command=sub_win.destroy).grid(row=1, column=0, padx=20, pady=20)
+
+        def on_ok():
+            sub_win.destroy()
+            if hasattr(self, 'progress_bar'):
+                del self.progress_bar
+            if hasattr(self, 'progress_label'):
+                del self.progress_label
+            self.draw_config()
+
+        ttk.Button(sub_frame, text="OK", command=on_ok).grid(row=1, column=0, padx=20, pady=20)
         
     def save_to_json(self): # Saves current configuration to a json file
         script_dir = os.path.dirname(__file__)
@@ -129,6 +138,7 @@ class BackupGUI:
                     f.write(f"{item}\n")
             self.root.after(0, lambda: self.sub_window(f"{len(self.failed)} files failed to transfer. See failed_transfers.txt in the backup folder for details."))
         self.root.after(0, lambda: self.draw_progress(100, "Backup Complete"))
+        self.root.after(0, lambda: self.sub_window("Backup Complete!"))
 
     def check_storage_space(self):  # Calculates the size of the backup (ignoring hidden files) and compares it to the space available at the backup location
         self.root.after(0, lambda: self.draw_progress(0, "Calculating Backup Size..."))
@@ -148,7 +158,7 @@ class BackupGUI:
         if shutil.disk_usage(self.location).free > total_size:
             self.start_backup()
         else:
-            self.sub_window("Not enough storage space for backup.")
+            self.root.after(0, lambda: self.sub_window("Not enough storage space for backup."))
 
     def custom_copytree(self, src, dst):    # Custom recursive copy function as copytree does not allow tracking progress
         os.makedirs(dst, exist_ok=True)
