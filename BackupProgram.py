@@ -136,9 +136,11 @@ class BackupGUI:
             with open(os.path.join(backup_folder, "failed_transfers.txt"), 'w') as f:
                 for item in self.failed:
                     f.write(f"{item}\n")
-            self.root.after(0, lambda: self.sub_window(f"{len(self.failed)} files failed to transfer. See failed_transfers.txt in the backup folder for details."))
-        self.root.after(0, lambda: self.draw_progress(100, "Backup Complete"))
-        self.root.after(0, lambda: self.sub_window("Backup Complete!"))
+            self.root.after(0, lambda: self.draw_progress(100, "Backup Complete"))
+            self.root.after(0, lambda: self.sub_window(f"Backup complete with {len(self.failed)} files failed to transfer. See failed_transfers.txt in the backup folder for details."))
+        else:
+            self.root.after(0, lambda: self.draw_progress(100, "Backup Complete"))
+            self.root.after(0, lambda: self.sub_window("Backup Complete!"))
 
     def check_storage_space(self):  # Calculates the size of the backup (ignoring hidden files) and compares it to the space available at the backup location
         self.root.after(0, lambda: self.draw_progress(0, "Calculating Backup Size..."))
